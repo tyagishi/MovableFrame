@@ -10,7 +10,7 @@ import SwiftUI
 
 struct ExpandCorner: View {
     @Binding var frameRect: CGRect
-    @Binding var canvasRect: CGRect
+    var canvasRect: CGRect
     @Binding var isHovering:Bool
     let dragBoxSize: CGSize
     let fixedCorner: FrameView.Anchor
@@ -153,7 +153,7 @@ struct ExpandCorner: View {
 
 struct ExpandCorner_Previews: PreviewProvider {
     static var previews: some View {
-        ExpandCorner(frameRect: .constant(CGRect.zero), canvasRect: .constant(CGRect.zero), isHovering: .constant(false),
+        ExpandCorner(frameRect: .constant(CGRect.zero), canvasRect: CGRect(x: 0, y: 0, width: 800, height: 600), isHovering: .constant(false),
                      dragBoxSize: CGSize(width: 10, height: 10), fixedCorner: .LowerLeft)
     }
 }

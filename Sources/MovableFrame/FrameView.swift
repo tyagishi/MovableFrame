@@ -37,13 +37,13 @@ public struct FrameView: View {
                 .tlPlacement(rect: frameRect)
                 .border(Color.orange)
                 .gesture(dragMoveGesture)
-                .overlay(ExpandCorner(frameRect: $frameRect, canvasRect: $canvasRect, isHovering: $isHoveringOnCorner,
+                .overlay(ExpandCorner(frameRect: $frameRect, canvasRect: canvasRect, isHovering: $isHoveringOnCorner,
                                       dragBoxSize: cornerDragBoxSize, fixedCorner: .LowerRight))
-                .overlay(ExpandCorner(frameRect: $frameRect, canvasRect: $canvasRect, isHovering: $isHoveringOnCorner,
+                .overlay(ExpandCorner(frameRect: $frameRect, canvasRect: canvasRect, isHovering: $isHoveringOnCorner,
                                       dragBoxSize: cornerDragBoxSize, fixedCorner: .LowerLeft))
-                .overlay(ExpandCorner(frameRect: $frameRect, canvasRect: $canvasRect, isHovering: $isHoveringOnCorner,
+                .overlay(ExpandCorner(frameRect: $frameRect, canvasRect: canvasRect, isHovering: $isHoveringOnCorner,
                                       dragBoxSize: cornerDragBoxSize, fixedCorner: .UpperRight))
-                .overlay(ExpandCorner(frameRect: $frameRect, canvasRect: $canvasRect, isHovering: $isHoveringOnCorner,
+                .overlay(ExpandCorner(frameRect: $frameRect, canvasRect: canvasRect, isHovering: $isHoveringOnCorner,
                                       dragBoxSize: cornerDragBoxSize, fixedCorner: .UpperLeft))
             Circle()
             .frame(width: 10, height: 10)
