@@ -6,6 +6,7 @@
 //  Copyright © 2020 SmallDeskSoftware. All rights reserved.
 //
 
+import Foundation
 import SwiftUI
 
 struct ExpandCorner: View {
@@ -29,7 +30,7 @@ struct ExpandCorner: View {
                 isHovering = isIn
                 print("isIn(ExpandCorner): \(isIn)")
 //                isIn ? NSCursor.resizeUpDown.set() : NSCursor.arrow.set()
-                isIn ? self.cursor() : NSCursor.arrow.set()
+                isIn ? self.cursor() : NSCursor.pop()
             })
             .border(Color.blue)
             .offset(cornerCenterInSize)
@@ -53,18 +54,16 @@ struct ExpandCorner: View {
     }
     
     func cursor() -> Void {
-//        let cursorDir = "resizenortheastsouthwest"
-//        let cursorFile = "cursor.pdf"
-//        let baseURL = URL(fileURLWithPath: "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors")
-//        let cursorBasePath = baseURL.appendingPathComponent(cursorDir)
-//        let cursorImagePath = cursorBasePath.appendingPathComponent(cursorFile)
-//        let cursorInfoPath = cursorBasePath.appendingPathComponent("info.plist")
-//        let nsImage = NSImage(byReferencingFile: cursorImagePath.absoluteString)!
-//        let cursorInfo = NSDictionary(contentsOfFile: cursorInfoPath.absoluteString)
-//        let hotPoint = NSPoint(x: cursorInfo?.value(forKey: "hotx") as! Double, y: cursorInfo?.value(forKey: "hoty") as! Double)
-//        let cursor = NSCursor.init(image: nsImage, hotSpot: hotPoint)
-        let cursor = NSCursor(image: NSImage(byReferencingFile: "/System/Library/Frameworks/WebKit.framework/Versions/Current/Frameworks/WebCore.framework/Resources/northWestSouthEastResizeCursor.png")!, hotSpot: NSPoint(x: 8, y: 8))
-        cursor.set()
+        switch fixedCorner {
+        case .UpperRight, .LowerLeft:
+            guard let cursorImage = Bundle.module.image(forResource: "URLL") else { return }
+            let cursor = NSCursor(image: cursorImage, hotSpot: NSPoint(x: 10.0, y: 10.0))
+            cursor.push()
+        case .UpperLeft, .LowerRight:
+            guard let cursorImage = Bundle.module.image(forResource: "ULLR") else { return }
+            let cursor = NSCursor(image: cursorImage, hotSpot: NSPoint(x: 10.0, y: 10.0))
+            cursor.push()
+        }
     }
     
     static func oppositeCorner(corner: FrameView.Anchor) -> FrameView.Anchor {
