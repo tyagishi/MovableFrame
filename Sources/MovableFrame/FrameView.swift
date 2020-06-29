@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct FrameView: View {
+public struct FrameView: View {
     public enum Anchor {
         case UpperLeft, UpperRight, LowerLeft, LowerRight
     }
@@ -20,7 +20,12 @@ struct FrameView: View {
     @State private var isHoveringOnCorner = false
     var cornerDragBoxSize = CGSize(width: 50, height: 50)
 
-    var body: some View {
+    public init(frameRect: Binding<CGRect>, canvasRect: Binding<CGRect>) {
+        self._frameRect = frameRect
+        self._canvasRect = canvasRect
+    }
+
+    public var body: some View {
         ZStack {
             Rectangle()
                 .stroke(lineWidth: 3).foregroundColor(Color.red)
@@ -97,32 +102,5 @@ struct TopLeadingPlacement: ViewModifier {
 extension View {
     func tlPlacement( rect: CGRect ) -> some View {
         self.modifier(TopLeadingPlacement(rect: rect))
-    }
-}
-
-struct FrameViewRectPreferenceData: Equatable {
-    let name: String
-    let rect: CGRect
-}
-
-struct FrameViewRectPreferenceKey: PreferenceKey {
-    typealias Value = [FrameViewRectPreferenceData]
-    
-    static var defaultValue:[FrameViewRectPreferenceData] = []
-    
-    static func reduce(value: inout [FrameViewRectPreferenceData], nextValue: () -> [FrameViewRectPreferenceData]) {
-        value.append(contentsOf: nextValue())
-    }
-}
-
-struct FrameViewRectPreferenceSetter: View {
-    let prefName: String
-    var body: some View {
-        GeometryReader { geom in
-            Rectangle()
-                .fill(Color.clear)
-                .preference(key: FrameViewRectPreferenceKey.self,
-                            value: [FrameViewRectPreferenceData(name: self.prefName, rect: geom.frame(in: .named("mainZStack")))])
-        }
     }
 }
