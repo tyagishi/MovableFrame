@@ -21,10 +21,17 @@ struct ExpandCorner: View {
     var body: some View {
         let dragCorner = ExpandCorner.oppositeCorner(corner: fixedCorner)
         let cornerCenter = ExpandCorner.cornerPosition(frame: frameRect, corner: dragCorner)
-        let cornerCenterInSize = CGSize(width: cornerCenter.x - canvasRect.width / 2, height: cornerCenter.y - canvasRect.height / 2)
-        return Rectangle()
+        let cornerCenterInSize = CGSize(width: cornerCenter.x - canvasRect.width / 2 - canvasRect.origin.x,
+                                        height: cornerCenter.y - canvasRect.height / 2 - canvasRect.origin.y)
+        return ZStack {
+            Circle()
+                .frame(width: 10, height: 10)
+                .offset(x: cornerCenter.x, y: cornerCenter.y)
+                //.offset(cornerCenterInSize)
+            Rectangle()
             .fill(Color.clear)
             .contentShape(Rectangle())
+            .border(Color.green)
             .frame(width: dragBoxSize.width, height: dragBoxSize.height)
             .onHover(perform: { isIn in
                 isHovering = isIn
@@ -48,6 +55,8 @@ struct ExpandCorner: View {
                     self.isDraggingUL = false
                     NSCursor.arrow.set()
                 })
+            
+        }
     }
     
     func setCursor() -> Void {
@@ -79,6 +88,7 @@ struct ExpandCorner: View {
     static func cornerPosition(frame: CGRect, corner: FrameView.Anchor) -> CGPoint {
         switch corner {
         case .UpperLeft:
+            print("UpperLeft \(frame.minX) : \(frame.minY)")
             return CGPoint(x: frame.minX, y: frame.minY)
         case .UpperRight:
             return CGPoint(x: frame.maxX, y: frame.minY)
