@@ -14,15 +14,15 @@ public struct FrameView: View {
     }
 
     @Binding var frameRect: CGRect
-    @Binding var canvasRect: CGRect
+    var canvasRect: CGRect
     @State private var isDragging:Bool = false
     @State private var dragStartRect: CGRect = CGRect.zero
     @State private var isHoveringOnCorner = false
     var cornerDragBoxSize = CGSize(width: 50, height: 50)
 
-    public init(frameRect: Binding<CGRect>, canvasRect: Binding<CGRect>) {
+    public init(frameRect: Binding<CGRect>, canvasRect: CGRect) {
         self._frameRect = frameRect
-        self._canvasRect = canvasRect
+        self.canvasRect = canvasRect
     }
 
     public var body: some View {
@@ -84,7 +84,7 @@ extension CGRect {
 
 struct FrameView_Previews: PreviewProvider {
     static var previews: some View {
-        FrameView(frameRect: .constant(CGRect.zero), canvasRect: .constant(CGRect.zero))
+        FrameView(frameRect: .constant(CGRect.zero), canvasRect: CGRect(x: 0, y: 0, width: 800, height: 600))
     }
 }
 
