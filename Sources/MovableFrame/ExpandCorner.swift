@@ -30,7 +30,7 @@ struct ExpandCorner: View {
                 isHovering = isIn
                 print("isIn(ExpandCorner): \(isIn)")
 //                isIn ? NSCursor.resizeUpDown.set() : NSCursor.arrow.set()
-                isIn ? self.cursor() : NSCursor.pop()
+                isIn ? self.setCursor() : NSCursor.pop()
             })
             .border(Color.blue)
             .offset(cornerCenterInSize)
@@ -53,7 +53,7 @@ struct ExpandCorner: View {
                 })
     }
     
-    func cursor() -> Void {
+    func setCursor() -> Void {
         switch fixedCorner {
         case .UpperRight, .LowerLeft:
             guard let cursorImage = Bundle.module.image(forResource: "URLL") else { return }
