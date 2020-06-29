@@ -28,11 +28,8 @@ struct ExpandCorner: View {
             .frame(width: dragBoxSize.width, height: dragBoxSize.height)
             .onHover(perform: { isIn in
                 isHovering = isIn
-                print("isIn(ExpandCorner): \(isIn)")
-//                isIn ? NSCursor.resizeUpDown.set() : NSCursor.arrow.set()
                 isIn ? self.setCursor() : NSCursor.pop()
             })
-            .border(Color.blue)
             .offset(cornerCenterInSize)
             .gesture(DragGesture()
                 .onChanged { gesture in

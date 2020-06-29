@@ -35,7 +35,6 @@ public struct FrameView: View {
                     isIn ? NSCursor.openHand.set() : NSCursor.arrow.set()
                 })
                 .tlPlacement(rect: frameRect)
-                .border(Color.orange)
                 .gesture(dragMoveGesture)
                 .overlay(ExpandCorner(frameRect: $frameRect, isHovering: $isHoveringOnCorner, canvasRect: canvasRect,
                                       dragBoxSize: cornerDragBoxSize, fixedCorner: .LowerRight))
@@ -45,10 +44,6 @@ public struct FrameView: View {
                                       dragBoxSize: cornerDragBoxSize, fixedCorner: .UpperRight))
                 .overlay(ExpandCorner(frameRect: $frameRect, isHovering: $isHoveringOnCorner, canvasRect: canvasRect,
                                       dragBoxSize: cornerDragBoxSize, fixedCorner: .UpperLeft))
-            Circle()
-            .frame(width: 10, height: 10)
-                .border(Color.red, width: 5)
-                .position(x: canvasRect.width/2, y: canvasRect.height/2)
         }
     }
 
