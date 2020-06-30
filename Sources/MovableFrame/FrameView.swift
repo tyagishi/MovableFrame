@@ -58,9 +58,9 @@ public struct FrameView: View {
                 let newPosition = CGPoint(x: gesture.translation.width + self.dragStartRect.origin.x,
                                           y: gesture.translation.height + self.dragStartRect.origin.y)
                 let checkRect = CGRect(origin: newPosition, size: self.frameRect.size)
-                if self.canvasRect.contains(checkRect) {
+//                if self.canvasRect.contains(checkRect) {
                     self.frameRect.origin = newPosition
-                }
+  //              }
             }
             .onEnded { gesture in
                 self.isDragging = false

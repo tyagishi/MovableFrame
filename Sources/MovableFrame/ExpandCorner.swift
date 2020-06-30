@@ -24,10 +24,6 @@ struct ExpandCorner: View {
         let cornerCenterInSize = CGSize(width: cornerCenter.x - canvasRect.width / 2 - canvasRect.origin.x,
                                         height: cornerCenter.y - canvasRect.height / 2 - canvasRect.origin.y)
         return ZStack {
-            Circle()
-                .frame(width: 10, height: 10)
-                .offset(x: cornerCenter.x, y: cornerCenter.y)
-                //.offset(cornerCenterInSize)
             Rectangle()
             .fill(Color.clear)
             .contentShape(Rectangle())
@@ -46,9 +42,9 @@ struct ExpandCorner: View {
                     // change size
                     let moveSize = ExpandCorner.getMoveSize(rect: self.frameRect.size, translation: gesture.translation, fixedCorner: self.fixedCorner)
                     let checkRect = ExpandCorner.changeSizeWithFixedCorner( rect: self.dragStartRect, moveInX: moveSize, anchor: self.fixedCorner)
-                    if self.canvasRect.contains(checkRect) {
+//                    if self.canvasRect.contains(checkRect) {
                         self.frameRect = checkRect
-                    }
+//                    }
                 }
                 .onEnded { gesture in
                     self.isDraggingUL = false
@@ -87,7 +83,6 @@ struct ExpandCorner: View {
     static func cornerPosition(frame: CGRect, corner: FrameView.Anchor) -> CGPoint {
         switch corner {
         case .UpperLeft:
-            print("UpperLeft \(frame.minX) : \(frame.minY)")
             return CGPoint(x: frame.minX, y: frame.minY)
         case .UpperRight:
             return CGPoint(x: frame.maxX, y: frame.minY)
