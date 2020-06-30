@@ -31,7 +31,6 @@ struct ExpandCorner: View {
             Rectangle()
             .fill(Color.clear)
             .contentShape(Rectangle())
-            .border(Color.green)
             .frame(width: dragBoxSize.width, height: dragBoxSize.height)
             .onHover(perform: { isIn in
                 isHovering = isIn
