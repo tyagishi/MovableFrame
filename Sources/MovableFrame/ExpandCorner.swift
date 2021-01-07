@@ -25,7 +25,7 @@ struct ExpandCorner: View {
         return ZStack {
             Rectangle()
                 .fill(Color.clear)
-                .border(Color.green)
+                //.border(Color.green) // for debug
                 .contentShape(Rectangle())
                 .frame(width: dragBoxSize.width, height: dragBoxSize.height)
                 .onHover(perform: { isIn in
