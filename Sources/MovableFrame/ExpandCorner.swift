@@ -17,97 +17,97 @@ struct ExpandCorner: View {
     let fixedCorner: FrameView.Anchor
     @State var isDraggingUL: Bool = false
     @State var dragStartRect: CGRect = CGRect.zero
-
+    
     var body: some View {
         let dragCorner = ExpandCorner.oppositeCorner(corner: fixedCorner)
         let cornerCenter = ExpandCorner.cornerPosition(frame: frameRect, corner: dragCorner)
-        let cornerCenterInSize = CGSize(width: cornerCenter.x - canvasRect.width / 2 - canvasRect.origin.x,
-                                        height: cornerCenter.y - canvasRect.height / 2 - canvasRect.origin.y)
+        let cornerBoxRect = CGRect(origin: CGPoint(x: cornerCenter.x - dragBoxSize.width/2, y: cornerCenter.y - dragBoxSize.width/2), size: dragBoxSize)
         return ZStack {
             Rectangle()
-            .fill(Color.clear)
-            .contentShape(Rectangle())
-            .frame(width: dragBoxSize.width, height: dragBoxSize.height)
-            .onHover(perform: { isIn in
-                isHovering = isIn
-                isIn ? self.setCursor() : NSCursor.pop()
-            })
-            .offset(cornerCenterInSize)
-            .gesture(DragGesture()
-                .onChanged { gesture in
-                    if self.isDraggingUL == false {
-                        self.dragStartRect = self.frameRect
-                        self.isDraggingUL = true
-                    }
-                    // change size
-                    let moveSize = ExpandCorner.getMoveSize(rect: self.frameRect.size, translation: gesture.translation, fixedCorner: self.fixedCorner)
-                    let checkRect = ExpandCorner.changeSizeWithFixedCorner( rect: self.dragStartRect, moveInX: moveSize, anchor: self.fixedCorner)
-//                    if self.canvasRect.contains(checkRect) {
-                        self.frameRect = checkRect
-//                    }
-                }
-                .onEnded { gesture in
-                    self.isDraggingUL = false
-                    NSCursor.arrow.set()
+                .fill(Color.clear)
+                .border(Color.green)
+                .contentShape(Rectangle())
+                .frame(width: dragBoxSize.width, height: dragBoxSize.height)
+                .onHover(perform: { isIn in
+                    isHovering = isIn
+                    isIn ? self.setCursor() : NSCursor.pop()
                 })
+                .tlPlacement(rect: cornerBoxRect)
+                .gesture(DragGesture()
+                            .onChanged { gesture in
+                                if self.isDraggingUL == false {
+                                    self.dragStartRect = self.frameRect
+                                    self.isDraggingUL = true
+                                }
+                                // change size
+                                let moveSize = ExpandCorner.getMoveSize(rect: self.frameRect.size, translation: gesture.translation, fixedCorner: self.fixedCorner)
+                                let checkRect = ExpandCorner.changeSizeWithFixedCorner( rect: self.dragStartRect, moveInX: moveSize, anchor: self.fixedCorner)
+                                //                    if self.canvasRect.contains(checkRect) {
+                                self.frameRect = checkRect
+                                //                    }
+                            }
+                            .onEnded { gesture in
+                                self.isDraggingUL = false
+                                NSCursor.arrow.set()
+                            })
             
         }
     }
     
     func setCursor() -> Void {
         switch fixedCorner {
-        case .UpperRight, .LowerLeft:
-            guard let cursorImage = Bundle.module.image(forResource: "URLL") else { return }
-            let cursor = NSCursor(image: cursorImage, hotSpot: NSPoint(x: 10.0, y: 10.0))
-            cursor.push()
-        case .UpperLeft, .LowerRight:
-            guard let cursorImage = Bundle.module.image(forResource: "ULLR") else { return }
-            let cursor = NSCursor(image: cursorImage, hotSpot: NSPoint(x: 10.0, y: 10.0))
-            cursor.push()
+            case .UpperRight, .LowerLeft:
+                guard let cursorImage = Bundle.module.image(forResource: "URLL") else { return }
+                let cursor = NSCursor(image: cursorImage, hotSpot: NSPoint(x: 10.0, y: 10.0))
+                cursor.push()
+            case .UpperLeft, .LowerRight:
+                guard let cursorImage = Bundle.module.image(forResource: "ULLR") else { return }
+                let cursor = NSCursor(image: cursorImage, hotSpot: NSPoint(x: 10.0, y: 10.0))
+                cursor.push()
         }
     }
     
     static func oppositeCorner(corner: FrameView.Anchor) -> FrameView.Anchor {
         switch corner {
-        case .UpperLeft:
-            return .LowerRight
-        case .UpperRight:
-            return .LowerLeft
-        case .LowerLeft:
-            return .UpperRight
-        case .LowerRight:
-            return .UpperLeft
+            case .UpperLeft:
+                return .LowerRight
+            case .UpperRight:
+                return .LowerLeft
+            case .LowerLeft:
+                return .UpperRight
+            case .LowerRight:
+                return .UpperLeft
         }
     }
     
     static func cornerPosition(frame: CGRect, corner: FrameView.Anchor) -> CGPoint {
         switch corner {
-        case .UpperLeft:
-            return CGPoint(x: frame.minX, y: frame.minY)
-        case .UpperRight:
-            return CGPoint(x: frame.maxX, y: frame.minY)
-        case .LowerLeft:
-            return CGPoint(x: frame.minX, y: frame.maxY)
-        case .LowerRight:
-            return CGPoint(x: frame.maxX, y: frame.maxY)
+            case .UpperLeft:
+                return CGPoint(x: frame.minX, y: frame.minY)
+            case .UpperRight:
+                return CGPoint(x: frame.maxX, y: frame.minY)
+            case .LowerLeft:
+                return CGPoint(x: frame.minX, y: frame.maxY)
+            case .LowerRight:
+                return CGPoint(x: frame.maxX, y: frame.maxY)
         }
     }
-
+    
     public static func getMoveSize(rect: CGSize, translation: CGSize, fixedCorner: FrameView.Anchor) -> CGFloat {
         let yDivX = rect.height / rect.width
         let x = translation.width
         let y = translation.height * yDivX
-
+        
         var moveSize:CGFloat = 0
         switch fixedCorner {
-        case .LowerRight:
-            moveSize = abs(x) > abs(y) ? x * -1 : y * -1 // moveSize   +: expand   -: schrink
-        case .LowerLeft:
-            moveSize = abs(x) > abs(y) ? x * +1 : y * -1 // moveSize   +: expand   -: schrink
-        case .UpperRight:
-            moveSize = abs(x) > abs(y) ? x * -1 : y * +1 // moveSize   +: expand   -: schrink
-        case .UpperLeft:
-            moveSize = abs(x) > abs(y) ? x * +1 : y * +1 // moveSize   +: expand   -: schrink
+            case .LowerRight:
+                moveSize = abs(x) > abs(y) ? x * -1 : y * -1 // moveSize   +: expand   -: schrink
+            case .LowerLeft:
+                moveSize = abs(x) > abs(y) ? x * +1 : y * -1 // moveSize   +: expand   -: schrink
+            case .UpperRight:
+                moveSize = abs(x) > abs(y) ? x * -1 : y * +1 // moveSize   +: expand   -: schrink
+            case .UpperLeft:
+                moveSize = abs(x) > abs(y) ? x * +1 : y * +1 // moveSize   +: expand   -: schrink
         }
         return moveSize
     }
@@ -115,7 +115,7 @@ struct ExpandCorner: View {
         let yDivX =  rect.size.height / rect.size.width
         let changeInX = moveInX
         let changeInY = (yDivX*moveInX)
-
+        
         //    origin
         //   (A)--------(B)
         //    |          |
