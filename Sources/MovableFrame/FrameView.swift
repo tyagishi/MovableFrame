@@ -15,14 +15,16 @@ public struct FrameView: View {
 
     @Binding var frameRect: CGRect
     var canvasRect: CGRect
+    var dragRect: CGRect
     @State private var isDragging:Bool = false
     @State private var dragStartRect: CGRect = CGRect.zero
     @State private var isHoveringOnCorner = false
     var cornerDragBoxSize = CGSize(width: 50, height: 50)
 
-    public init(frameRect: Binding<CGRect>, canvasRect: CGRect) {
+    public init(frameRect: Binding<CGRect>, canvasRect: CGRect, dragRect: CGRect = .zero) {
         self._frameRect = frameRect
         self.canvasRect = canvasRect
+        self.dragRect = dragRect
     }
 
     public var body: some View {
@@ -57,10 +59,11 @@ public struct FrameView: View {
 
                 let newPosition = CGPoint(x: gesture.translation.width + self.dragStartRect.origin.x,
                                           y: gesture.translation.height + self.dragStartRect.origin.y)
-//                let checkRect = CGRect(origin: newPosition, size: self.frameRect.size)
-//                if self.canvasRect.contains(checkRect) {
+                if dragRect != .zero {
+                    let checkRect = CGRect(origin: newPosition, size: frameRect.size)
+                    if !dragRect.contains(checkRect) { return }
+                }
                 self.frameRect.origin = newPosition
-//                }
             }
             .onEnded { gesture in
                 self.isDragging = false
