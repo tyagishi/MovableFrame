@@ -49,10 +49,9 @@ struct ExpandCorner: View {
                                 if shouldFit {
                                     let rightDiff = abs( newFrameRect.maxX - canvasRect.maxX )
                                     let leftDiff = abs( newFrameRect.minX - canvasRect.minX )
-                                    let topDiff = abs( newFrameRect.minX - canvasRect.minX )
+                                    let topDiff = abs( newFrameRect.minY - canvasRect.minY )
                                     let bottomDiff = abs( newFrameRect.maxY - canvasRect.maxY )
                                     
-                                    print("try to fit")
                                     switch fixedCorner {
                                         case .UpperLeft: // check bottom-right
                                             if rightDiff < bottomDiff {
@@ -78,11 +77,34 @@ struct ExpandCorner: View {
                                                     newFrameRect = newFrameRect.moveBottomLeftCornerToNewHeightKeepingSizeRatio(newHeight)
                                                 }
                                             }
+                                        case .LowerLeft: // check upper right
+                                            if rightDiff < topDiff {
+                                                if rightDiff < alignThreshold {
+                                                    let newWidth = canvasRect.maxX - newFrameRect.minX
+                                                    newFrameRect = newFrameRect.moveUpperRightCornerToNewWidthKeepingSizeRatio(newWidth)
+                                                }
+                                            } else {
+                                                if topDiff < alignThreshold {
+                                                    let newHeight = newFrameRect.maxY - canvasRect.minY
+                                                    newFrameRect = newFrameRect.moveUpperRightCornerToNewHeightKeepingSizeRatio(newHeight)
+                                                }
+                                            }
+                                        case .LowerRight: // check upper left
+                                            if leftDiff < topDiff {
+                                                if leftDiff < alignThreshold {
+                                                    let newWidth = newFrameRect.maxX - canvasRect.minX
+                                                    newFrameRect = newFrameRect.moveUpperLeftCornerToNewWidthKeepingSizeRatio(newWidth)
+                                                }
+                                            } else {
+                                                if topDiff < alignThreshold {
+                                                    let newHeight = newFrameRect.maxY - canvasRect.minY
+                                                    newFrameRect = newFrameRect.moveUpperLeftCornerToNewHeightKeepingSizeRatio(newHeight)
+                                                }
+                                            }
                                         
                                         default:
                                             break
                                     }
-                                    print("done")
                                 }
                                 //                    if self.canvasRect.contains(checkRect) {
                                 self.frameRect = newFrameRect
