@@ -9,7 +9,7 @@
 import SwiftUI
 import Combine
 
-public let shiftIsChanged = NSNotification.Name("ShiftIsChanged")
+public let alignWithBorder = NSNotification.Name("AlignWithBorder")
 
 public struct FrameView: View {
     public enum Anchor {
@@ -20,19 +20,17 @@ public struct FrameView: View {
     @Binding var frameRect: CGRect
     var canvasRect: CGRect
     var dragRect: CGRect
-    var imageRect:CGRect  // rect in canvas(size)
     @State private var isDragging:Bool = false
     @State private var dragStartRect: CGRect = CGRect.zero
     @State private var isHoveringOnCorner = false
     var cornerDragBoxSize = CGSize(width: 50, height: 50)
     @State private var shouldFit:Bool = false
-    let alignThreshold:CGFloat = 20
+    let alignThreshold:CGFloat = 50
 
-    public init(frameRect: Binding<CGRect>, canvasRect: CGRect, dragRect: CGRect = .zero, imageRect: CGRect = .zero) {
+    public init(frameRect: Binding<CGRect>, canvasRect: CGRect, dragRect: CGRect = .zero) {
         self._frameRect = frameRect
         self.canvasRect = canvasRect
         self.dragRect = dragRect
-        self.imageRect = imageRect
     }
 
     public var body: some View {
@@ -56,7 +54,7 @@ public struct FrameView: View {
                 .overlay(ExpandCorner(frameRect: $frameRect, isHovering: $isHoveringOnCorner, canvasRect: canvasRect,
                                       dragBoxSize: cornerDragBoxSize, fixedCorner: .UpperLeft))
         }
-        .onReceive(NotificationCenter.default.publisher(for: shiftIsChanged)) { obj in
+        .onReceive(NotificationCenter.default.publisher(for: alignWithBorder)) { obj in
             guard let bValue = obj.object as? Bool else { return }
             self.shouldFit = bValue
         }
@@ -74,30 +72,30 @@ public struct FrameView: View {
                                           y: gesture.translation.height + self.dragStartRect.origin.y)
                 if shouldFit {
                     // check top
-                    let diffTop = abs( imageRect.minY - newPosition.y )
-                    let diffBottom = abs( imageRect.maxY - (newPosition.y + frameRect.height) )
+                    let diffTop = abs( canvasRect.minY - newPosition.y )
+                    let diffBottom = abs( canvasRect.maxY - (newPosition.y + frameRect.height) )
                     if diffTop < diffBottom {
                         // align to top?
                         if diffTop < alignThreshold {
-                            newPosition.y = imageRect.minY
+                            newPosition.y = canvasRect.minY
                         }
                     } else {
                         // align to bottom?
                         if diffBottom < alignThreshold {
-                            newPosition.y = imageRect.maxY - frameRect.height
+                            newPosition.y = canvasRect.maxY - frameRect.height
                         }
                     }
 
-                    let diffLeft = abs( imageRect.minX - newPosition.x)
-                    let diffRight = abs( imageRect.maxX - (newPosition.x + frameRect.width))
+                    let diffLeft = abs( canvasRect.minX - newPosition.x)
+                    let diffRight = abs( canvasRect.maxX - (newPosition.x + frameRect.width))
                     if diffLeft < diffRight {
                         // align to left?
                         if diffLeft < alignThreshold {
-                            newPosition.x = imageRect.minX
+                            newPosition.x = canvasRect.minX
                         }
                     } else {
                         if diffRight < alignThreshold {
-                            newPosition.x = imageRect.maxX - frameRect.width
+                            newPosition.x = canvasRect.maxX - frameRect.width
                         }
                     }
                 }
@@ -108,7 +106,6 @@ public struct FrameView: View {
                 self.frameRect.origin = newPosition
             }
             .onEnded { gesture in
-                if shouldFit { return }
                 self.isDragging = false
                 NSCursor.arrow.set()
             }
