@@ -20,16 +20,19 @@ public struct FrameView: View {
     @Binding var frameRect: CGRect
     var canvasRect: CGRect
     var dragRect: CGRect
+    var imageRect:CGRect  // rect in canvas(size)
     @State private var isDragging:Bool = false
     @State private var dragStartRect: CGRect = CGRect.zero
     @State private var isHoveringOnCorner = false
     var cornerDragBoxSize = CGSize(width: 50, height: 50)
     @State private var shouldFit:Bool = false
+    let alignThreshold:CGFloat = 20
 
-    public init(frameRect: Binding<CGRect>, canvasRect: CGRect, dragRect: CGRect = .zero) {
+    public init(frameRect: Binding<CGRect>, canvasRect: CGRect, dragRect: CGRect = .zero, imageRect: CGRect = .zero) {
         self._frameRect = frameRect
         self.canvasRect = canvasRect
         self.dragRect = dragRect
+        self.imageRect = imageRect
     }
 
     public var body: some View {
@@ -42,10 +45,8 @@ public struct FrameView: View {
                     isIn ? NSCursor.openHand.set() : NSCursor.arrow.set()
                 })
                 .tlPlacement(rect: frameRect)
+                //.simultaneousGesture(dragMoveGesture, including: .all)
                 .gesture(dragMoveGesture)
-                .gesture(DragGesture().modifiers(.shift).onEnded{ _ in
-                    print("shift key!")
-                })
                 .overlay(ExpandCorner(frameRect: $frameRect, isHovering: $isHoveringOnCorner, canvasRect: canvasRect,
                                       dragBoxSize: cornerDragBoxSize, fixedCorner: .LowerRight))
                 .overlay(ExpandCorner(frameRect: $frameRect, isHovering: $isHoveringOnCorner, canvasRect: canvasRect,
@@ -72,7 +73,33 @@ public struct FrameView: View {
                 var newPosition = CGPoint(x: gesture.translation.width + self.dragStartRect.origin.x,
                                           y: gesture.translation.height + self.dragStartRect.origin.y)
                 if shouldFit {
-                    print("try to fitting at \(Date())")
+                    // check top
+                    let diffTop = abs( imageRect.minY - newPosition.y )
+                    let diffBottom = abs( imageRect.maxY - (newPosition.y + frameRect.height) )
+                    if diffTop < diffBottom {
+                        // align to top?
+                        if diffTop < alignThreshold {
+                            newPosition.y = imageRect.minY
+                        }
+                    } else {
+                        // align to bottom?
+                        if diffBottom < alignThreshold {
+                            newPosition.y = imageRect.maxY - frameRect.height
+                        }
+                    }
+
+                    let diffLeft = abs( imageRect.minX - newPosition.x)
+                    let diffRight = abs( imageRect.maxX - (newPosition.x + frameRect.width))
+                    if diffLeft < diffRight {
+                        // align to left?
+                        if diffLeft < alignThreshold {
+                            newPosition.x = imageRect.minX
+                        }
+                    } else {
+                        if diffRight < alignThreshold {
+                            newPosition.x = imageRect.maxX - frameRect.width
+                        }
+                    }
                 }
                 if dragRect != .zero {
                     let checkRect = CGRect(origin: newPosition, size: frameRect.size)
