@@ -46,13 +46,13 @@ public struct FrameView: View {
                 //.simultaneousGesture(dragMoveGesture, including: .all)
                 .gesture(dragMoveGesture)
                 .overlay(ExpandCorner(frameRect: $frameRect, isHovering: $isHoveringOnCorner, canvasRect: canvasRect,
-                                      dragBoxSize: cornerDragBoxSize, fixedCorner: .LowerRight))
+                                      dragBoxSize: cornerDragBoxSize, fixedCorner: .LowerRight, shouldFit: shouldFit))
                 .overlay(ExpandCorner(frameRect: $frameRect, isHovering: $isHoveringOnCorner, canvasRect: canvasRect,
-                                      dragBoxSize: cornerDragBoxSize, fixedCorner: .LowerLeft))
+                                      dragBoxSize: cornerDragBoxSize, fixedCorner: .LowerLeft, shouldFit: shouldFit))
                 .overlay(ExpandCorner(frameRect: $frameRect, isHovering: $isHoveringOnCorner, canvasRect: canvasRect,
-                                      dragBoxSize: cornerDragBoxSize, fixedCorner: .UpperRight))
+                                      dragBoxSize: cornerDragBoxSize, fixedCorner: .UpperRight, shouldFit: shouldFit))
                 .overlay(ExpandCorner(frameRect: $frameRect, isHovering: $isHoveringOnCorner, canvasRect: canvasRect,
-                                      dragBoxSize: cornerDragBoxSize, fixedCorner: .UpperLeft))
+                                      dragBoxSize: cornerDragBoxSize, fixedCorner: .UpperLeft, shouldFit: shouldFit))
         }
         .onReceive(NotificationCenter.default.publisher(for: alignWithBorder)) { obj in
             guard let bValue = obj.object as? Bool else { return }

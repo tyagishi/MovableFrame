@@ -8,6 +8,7 @@
 
 import Foundation
 import SwiftUI
+import SDSCGExtension
 
 struct ExpandCorner: View {
     @Binding var frameRect: CGRect
@@ -15,9 +16,12 @@ struct ExpandCorner: View {
     var canvasRect: CGRect
     let dragBoxSize: CGSize
     let fixedCorner: FrameView.Anchor
-    @State var isDraggingUL: Bool = false
+    @State var isDragging: Bool = false
     @State var dragStartRect: CGRect = CGRect.zero
     
+    var shouldFit:Bool
+    let alignThreshold:CGFloat = 50
+
     var body: some View {
         let dragCorner = ExpandCorner.oppositeCorner(corner: fixedCorner)
         let cornerCenter = ExpandCorner.cornerPosition(frame: frameRect, corner: dragCorner)
@@ -35,19 +39,57 @@ struct ExpandCorner: View {
                 .tlPlacement(rect: cornerBoxRect)
                 .gesture(DragGesture()
                             .onChanged { gesture in
-                                if self.isDraggingUL == false {
+                                if self.isDragging == false {
                                     self.dragStartRect = self.frameRect
-                                    self.isDraggingUL = true
+                                    self.isDragging = true
                                 }
                                 // change size
                                 let moveSize = ExpandCorner.getMoveSize(rect: self.frameRect.size, translation: gesture.translation, fixedCorner: self.fixedCorner)
-                                let checkRect = ExpandCorner.changeSizeWithFixedCorner( rect: self.dragStartRect, moveInX: moveSize, anchor: self.fixedCorner)
+                                var newFrameRect = ExpandCorner.changeSizeWithFixedCorner( rect: self.dragStartRect, moveInX: moveSize, anchor: self.fixedCorner)
+                                if shouldFit {
+                                    let rightDiff = abs( newFrameRect.maxX - canvasRect.maxX )
+                                    let leftDiff = abs( newFrameRect.minX - canvasRect.minX )
+                                    let topDiff = abs( newFrameRect.minX - canvasRect.minX )
+                                    let bottomDiff = abs( newFrameRect.maxY - canvasRect.maxY )
+                                    
+                                    print("try to fit")
+                                    switch fixedCorner {
+                                        case .UpperLeft: // check bottom-right
+                                            if rightDiff < bottomDiff {
+                                                if rightDiff < alignThreshold {
+                                                    let newWidth = canvasRect.maxX - newFrameRect.minX
+                                                    newFrameRect = newFrameRect.moveBottomRightCornerToNewWidthKeepingSizeRatio(newWidth)
+                                                }
+                                            } else {
+                                                if bottomDiff < alignThreshold {
+                                                    let newHeight = canvasRect.maxY - newFrameRect.minY
+                                                    newFrameRect = newFrameRect.moveBottomRightCornerToNewHeightKeepingSizeRatio(newHeight)
+                                                }
+                                            }
+                                        case .UpperRight:// check bottom-left
+                                            if leftDiff < bottomDiff {
+                                                if leftDiff < alignThreshold {
+                                                    let newWidth = newFrameRect.maxX - canvasRect.minX
+                                                    newFrameRect = newFrameRect.moveBottomLeftCornerToNewWidthKeepingSizeRatio(newWidth)
+                                                }
+                                            } else {
+                                                if bottomDiff < alignThreshold {
+                                                    let newHeight = canvasRect.maxY - newFrameRect.minY
+                                                    newFrameRect = newFrameRect.moveBottomLeftCornerToNewHeightKeepingSizeRatio(newHeight)
+                                                }
+                                            }
+                                        
+                                        default:
+                                            break
+                                    }
+                                    print("done")
+                                }
                                 //                    if self.canvasRect.contains(checkRect) {
-                                self.frameRect = checkRect
+                                self.frameRect = newFrameRect
                                 //                    }
                             }
                             .onEnded { gesture in
-                                self.isDraggingUL = false
+                                self.isDragging = false
                                 NSCursor.arrow.set()
                             })
             
@@ -154,6 +196,6 @@ struct ExpandCorner: View {
 struct ExpandCorner_Previews: PreviewProvider {
     static var previews: some View {
         ExpandCorner(frameRect: .constant(CGRect.zero), isHovering: .constant(false), canvasRect: CGRect(x: 0, y: 0, width: 800, height: 600),
-                     dragBoxSize: CGSize(width: 10, height: 10), fixedCorner: .LowerLeft)
+                     dragBoxSize: CGSize(width: 10, height: 10), fixedCorner: .LowerLeft, shouldFit: false)
     }
 }
