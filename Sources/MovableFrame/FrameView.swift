@@ -7,12 +7,16 @@
 //
 
 import SwiftUI
+import Combine
+
+public let shiftIsChanged = NSNotification.Name("ShiftIsChanged")
 
 public struct FrameView: View {
     public enum Anchor {
         case UpperLeft, UpperRight, LowerLeft, LowerRight
     }
 
+    
     @Binding var frameRect: CGRect
     var canvasRect: CGRect
     var dragRect: CGRect
@@ -20,6 +24,7 @@ public struct FrameView: View {
     @State private var dragStartRect: CGRect = CGRect.zero
     @State private var isHoveringOnCorner = false
     var cornerDragBoxSize = CGSize(width: 50, height: 50)
+    @State private var shouldFit:Bool = false
 
     public init(frameRect: Binding<CGRect>, canvasRect: CGRect, dragRect: CGRect = .zero) {
         self._frameRect = frameRect
@@ -38,6 +43,9 @@ public struct FrameView: View {
                 })
                 .tlPlacement(rect: frameRect)
                 .gesture(dragMoveGesture)
+                .gesture(DragGesture().modifiers(.shift).onEnded{ _ in
+                    print("shift key!")
+                })
                 .overlay(ExpandCorner(frameRect: $frameRect, isHovering: $isHoveringOnCorner, canvasRect: canvasRect,
                                       dragBoxSize: cornerDragBoxSize, fixedCorner: .LowerRight))
                 .overlay(ExpandCorner(frameRect: $frameRect, isHovering: $isHoveringOnCorner, canvasRect: canvasRect,
@@ -46,6 +54,10 @@ public struct FrameView: View {
                                       dragBoxSize: cornerDragBoxSize, fixedCorner: .UpperRight))
                 .overlay(ExpandCorner(frameRect: $frameRect, isHovering: $isHoveringOnCorner, canvasRect: canvasRect,
                                       dragBoxSize: cornerDragBoxSize, fixedCorner: .UpperLeft))
+        }
+        .onReceive(NotificationCenter.default.publisher(for: shiftIsChanged)) { obj in
+            guard let bValue = obj.object as? Bool else { return }
+            self.shouldFit = bValue
         }
     }
 
@@ -57,8 +69,11 @@ public struct FrameView: View {
                     self.isDragging = true
                 }
 
-                let newPosition = CGPoint(x: gesture.translation.width + self.dragStartRect.origin.x,
+                var newPosition = CGPoint(x: gesture.translation.width + self.dragStartRect.origin.x,
                                           y: gesture.translation.height + self.dragStartRect.origin.y)
+                if shouldFit {
+                    print("try to fitting at \(Date())")
+                }
                 if dragRect != .zero {
                     let checkRect = CGRect(origin: newPosition, size: frameRect.size)
                     if !dragRect.contains(checkRect) { return }
@@ -66,6 +81,7 @@ public struct FrameView: View {
                 self.frameRect.origin = newPosition
             }
             .onEnded { gesture in
+                if shouldFit { return }
                 self.isDragging = false
                 NSCursor.arrow.set()
             }
@@ -102,3 +118,43 @@ extension View {
         self.modifier(TopLeadingPlacement(rect: rect))
     }
 }
+
+extension KeyEquivalent: Equatable {
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.character == rhs.character
+    }
+}
+
+public typealias KeyInputSubject = PassthroughSubject<KeyEquivalent, Never>
+
+public final class KeyInputSubjectWrapper: ObservableObject, Subject {
+    public func send(_ value: Output) {
+        objectWillChange.send(value)
+    }
+    
+    public func send(completion: Subscribers.Completion<Failure>) {
+        objectWillChange.send(completion: completion)
+    }
+    
+    public func send(subscription: Subscription) {
+        objectWillChange.send(subscription: subscription)
+    }
+    
+
+    public typealias ObjectWillChangePublisher = KeyInputSubject
+    public let objectWillChange: ObjectWillChangePublisher
+    public init(subject: ObjectWillChangePublisher = .init()) {
+        objectWillChange = subject
+    }
+}
+
+// MARK: Publisher Conformance
+public extension KeyInputSubjectWrapper {
+    typealias Output = KeyInputSubject.Output
+    typealias Failure = KeyInputSubject.Failure
+    
+    func receive<S>(subscriber: S) where S : Subscriber, S.Failure == Failure, S.Input == Output {
+        objectWillChange.receive(subscriber: subscriber)
+    }
+}
+   
