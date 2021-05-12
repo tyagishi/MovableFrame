@@ -101,9 +101,8 @@ struct ExpandCorner: View {
                                                     newFrameRect = newFrameRect.moveUpperLeftCornerToNewHeightKeepingSizeRatio(newHeight)
                                                 }
                                             }
-                                        
-                                        default:
-                                            break
+                                        //default:
+                                        //    break
                                     }
                                 }
                                 //                    if self.canvasRect.contains(checkRect) {
