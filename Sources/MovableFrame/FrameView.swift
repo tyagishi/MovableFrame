@@ -26,11 +26,19 @@ public struct FrameView: View {
     var cornerDragBoxSize = CGSize(width: 50, height: 50)
     @State private var shouldFit:Bool = false
     let alignThreshold:CGFloat = 50
+    let coordinateSpaceName: String?
+    let dragOnChanged: ((DragGesture.Value) -> Void)?
+    let dragOnEnded: ((DragGesture.Value) -> Void)?
 
-    public init(frameRect: Binding<CGRect>, canvasRect: CGRect, dragRect: CGRect = .zero) {
+    public init(frameRect: Binding<CGRect>, canvasRect: CGRect, dragRect: CGRect = .zero,
+                coordinateSpaceName: String? = nil,
+                dragOnChanged: ((DragGesture.Value) -> Void)? = nil, dragOnEnded: ((DragGesture.Value) -> Void)? = nil ) {
         self._frameRect = frameRect
         self.canvasRect = canvasRect
         self.dragRect = dragRect
+        self.coordinateSpaceName = coordinateSpaceName
+        self.dragOnChanged = dragOnChanged
+        self.dragOnEnded = dragOnEnded
     }
 
     public var body: some View {
@@ -61,7 +69,7 @@ public struct FrameView: View {
     }
 
     var dragMoveGesture: some Gesture {
-        DragGesture()
+        DragGesture(coordinateSpace: (coordinateSpaceName != nil) ? .named(coordinateSpaceName) : .local)
             .onChanged { gesture in
                 if self.isDragging == false {
                     self.dragStartRect = self.frameRect
@@ -104,9 +112,11 @@ public struct FrameView: View {
                     if !dragRect.contains(checkRect) { return }
                 }
                 self.frameRect.origin = newPosition
+                self.dragOnChanged?(gesture)
             }
             .onEnded { gesture in
                 self.isDragging = false
+                self.dragOnEnded?(gesture)
                 NSCursor.arrow.set()
             }
     }
